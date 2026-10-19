@@ -1,0 +1,9 @@
+# o que o gsn.py gera (pastas do cartão, .pck, arquivos temporários)
+saida/
+# o projeto de exemplo, quando aberto no editor
+exemplo/.godot/
+exemplo/*.import
+# arquivos guardados do projeto antigo (só local)
+.legado/
+__pycache__/
+*.pyc

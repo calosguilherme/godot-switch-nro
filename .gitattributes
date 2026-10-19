@@ -1,0 +1,5 @@
+# Tudo em LF, também no checkout do Windows: os scripts rodam no bash do WSL/Linux (CRLF quebra o bash),
+# os remendos precisam bater com o código do Godot e os arquivos do Godot usam LF.
+* text=auto eol=lf
+*.png binary
+*.jpg binary

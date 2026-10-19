@@ -1,0 +1,647 @@
+diff --git a/main/main.cpp b/main/main.cpp
+index 2fc62fd..e8ed62c 100644
+--- a/main/main.cpp
++++ b/main/main.cpp
+@@ -1214,12 +1214,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 
+ 			show_help = true;
+ 			exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 
+ 		} else if (arg == "--version") {
+ 			print_line(get_full_version_string());
+ 			exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 
+ 		} else if (arg == "-v" || arg == "--verbose") { // verbose output
+ 
+@@ -1259,13 +1259,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 
+ 					OS::get_singleton()->print(".\n");
+ 
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing audio driver argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--audio-output-latency") {
+ 			if (N) {
+@@ -1273,7 +1273,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing audio output latency argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--text-driver") {
+ 			if (N) {
+@@ -1281,7 +1281,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing text driver argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 
+ 		} else if (arg == "--display-driver") { // force video driver
+@@ -1312,13 +1312,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 
+ 					OS::get_singleton()->print(".\n");
+ 
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing display driver argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--rendering-method") {
+ 			if (N) {
+@@ -1326,7 +1326,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing renderer name argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--rendering-driver") {
+ 			if (N) {
+@@ -1335,7 +1335,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing rendering driver argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "-f" || arg == "--fullscreen") { // force fullscreen
+ 			init_fullscreen = true;
+@@ -1352,7 +1352,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing GPU index argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--gpu-validation") {
+ 			Engine::singleton->use_validation_layers = true;
+@@ -1374,7 +1374,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--delta-smoothing") {
+ 			if (N) {
+@@ -1392,12 +1392,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				}
+ 				if (!recognized) {
+ 					OS::get_singleton()->print("Delta-smoothing argument not recognized, aborting.\n");
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing delta-smoothing argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--single-window") { // force single window
+ 
+@@ -1416,12 +1416,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 					accessibility_mode_set = true;
+ 				} else {
+ 					OS::get_singleton()->print("Accessibility mode argument not recognized, aborting.\n");
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing accessibility mode argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--accessibility-driver") {
+ 			if (N) {
+@@ -1430,7 +1430,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing accessibility driver argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "-t" || arg == "--always-on-top") { // force always-on-top window
+ 
+@@ -1444,7 +1444,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 
+ 					OS::get_singleton()->print("Invalid resolution '%s', it should be e.g. '1280x720'.\n",
+ 							vm.utf8().get_data());
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 
+ 				int w = vm.get_slicec('x', 0).to_int();
+@@ -1453,7 +1453,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				if (w <= 0 || h <= 0) {
+ 					OS::get_singleton()->print("Invalid resolution '%s', width and height must be above 0.\n",
+ 							vm.utf8().get_data());
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 
+ 				window_size.width = w;
+@@ -1463,7 +1463,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing resolution argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 
+ 		} else if (arg == "--screen") { // set window screen
+@@ -1475,7 +1475,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing screen argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 
+ 		} else if (arg == "--position") { // set window position
+@@ -1487,7 +1487,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 
+ 					OS::get_singleton()->print("Invalid position '%s', it should be e.g. '80,128'.\n",
+ 							vm.utf8().get_data());
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 
+ 				int x = vm.get_slicec(',', 0).to_int();
+@@ -1499,7 +1499,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing position argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 
+ 		} else if (arg == "--headless") { // enable headless mode (no audio, no rendering).
+@@ -1512,7 +1512,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 			display_driver = EMBEDDED_DISPLAY_DRIVER;
+ #else
+ 			OS::get_singleton()->print("--embedded is only supported on macOS, aborting.\n");
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ #endif
+ 		} else if (arg == "--log-file") { // write to log file
+ 
+@@ -1521,7 +1521,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing log file path argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--profiling") { // enable profiling
+ 
+@@ -1534,7 +1534,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing language argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--remote-fs") { // remote filesystem
+ 
+@@ -1544,7 +1544,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing remote filesystem address, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #else
+ 			ERR_PRINT(
+@@ -1559,13 +1559,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing remote filesystem password, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #else
+ 			ERR_PRINT(
+ 					"`--remote-fs-password` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+ 					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ #endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+ 		} else if (arg == "--render-thread") { // render thread mode
+ 
+@@ -1586,13 +1586,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ #else
+ 					OS::get_singleton()->print("Valid options are 'unsafe', 'safe' and 'separate'.\n");
+ #endif
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing render thread mode argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #ifdef TOOLS_ENABLED
+ 		} else if (arg == "-e" || arg == "--editor") { // starts editor
+@@ -1607,12 +1607,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				debug_server_uri = N->get();
+ 				if (!debug_server_uri.contains("://")) { // wrong address
+ 					OS::get_singleton()->print("Invalid debug server uri. It should be of the form <protocol>://<bind_address>:<port>.\n");
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing remote debug server uri, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--single-threaded-scene") {
+ 			single_threaded_scene = true;
+@@ -1678,7 +1678,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing file to load argument after --validate-extension-api, aborting.");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--import") {
+ 			editor = true;
+@@ -1701,12 +1701,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing comma-separated list of patches after --patches, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #ifndef DISABLE_DEPRECATED
+ 		} else if (arg == "--export") { // For users used to 3.x syntax.
+ 			OS::get_singleton()->print("The Godot 3 --export option was changed to more explicit --export-release / --export-debug / --export-pack options.\nSee the --help output for details.\n");
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 		} else if (arg == "--convert-3to4") {
+ 			// Actually handling is done in start().
+ 			cmdline_tool = true;
+@@ -1760,7 +1760,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				quit_after = 1;
+ 			} else {
+ 				OS::get_singleton()->print("Missing relative or absolute path to project for --gdscript-docs, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #endif // MODULE_GDSCRIPT_ENABLED
+ #endif // TOOLS_ENABLED
+@@ -1771,18 +1771,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				String p = N->get();
+ 				if (OS::get_singleton()->set_cwd(p) != OK) {
+ 					OS::get_singleton()->print("Invalid project path specified: \"%s\", aborting.\n", p.utf8().get_data());
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #else
+ 			ERR_PRINT(
+ 					"`--path` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+ 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ #endif // defined(OVERRIDE_PATH_ENABLED)
+ 		} else if (arg == "--quit") { // Auto quit at the end of the first main loop iteration
+ 			quit_after = 1;
+@@ -1795,7 +1795,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing number of iterations, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg.ends_with("project.godot")) {
+ #if defined(OVERRIDE_PATH_ENABLED)
+@@ -1819,7 +1819,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 			ERR_PRINT(
+ 					"`project.godot` path was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+ 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ #endif // defined(OVERRIDE_PATH_ENABLED)
+ 		} else if (arg == "-b" || arg == "--breakpoints") { // add breakpoints
+ 
+@@ -1829,7 +1829,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing list of breakpoints, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 
+ 		} else if (arg == "--max-fps") { // set maximum rendered FPS
+@@ -1839,7 +1839,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing maximum FPS argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 
+ 		} else if (arg == "--frame-delay") { // force frame delay
+@@ -1849,7 +1849,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing frame delay argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 
+ 		} else if (arg == "--time-scale") { // force time scale
+@@ -1859,7 +1859,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--main-pack") {
+ // Note: main-pack is always used on web and can't be disabled.
+@@ -1877,22 +1877,22 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 						ERR_PRINT(
+ 								"--main-pack is attempting to load from outside of the executable, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+ 								"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+-						goto error;
++						{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 					}
+ 				} else {
+ 					ERR_PRINT("Invalid path to main pack file, aborting.\n");
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ #endif // defined(ANDROID_ENABLED) && !defined(OVERRIDE_PATH_ENABLED)
+ 			} else {
+ 				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #else
+ 			ERR_PRINT(
+ 					"`--main-pack` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+ 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ #endif // defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) || defined(ANDROID_ENABLED)
+ 
+ 		} else if (arg == "-d" || arg == "--debug") {
+@@ -1927,18 +1927,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				if (!debug_uri.contains("://")) { // wrong address
+ 					OS::get_singleton()->print(
+ 							"Invalid debug host address, it should be of the form <protocol>://<host/IP>:<port>.\n");
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #else
+ 			ERR_PRINT(
+ 					"`--remote-debug` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+ 					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ #endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+ 		} else if (arg == "--editor-pid") { // not exposed to user
+ 			if (N) {
+@@ -1946,7 +1946,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing editor PID argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--disable-render-loop") {
+ 			disable_render_loop = true;
+@@ -1956,7 +1956,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing fixed-fps argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--write-movie") {
+ 			if (N) {
+@@ -1968,7 +1968,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				OS::get_singleton()->_writing_movie = true;
+ 			} else {
+ 				OS::get_singleton()->print("Missing write-movie argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 		} else if (arg == "--disable-vsync") {
+ 			disable_vsync = true;
+@@ -2000,11 +2000,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 					XRServer::set_xr_mode(XRServer::XRMODE_ON);
+ 				} else {
+ 					OS::get_singleton()->print("Unknown --xr-mode argument \"%s\", aborting.\n", xr_mode.ascii().get_data());
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 			} else {
+ 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #endif // XR_DISABLED
+ 		} else if (arg == "--benchmark") {
+@@ -2017,7 +2017,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing <path> argument for --benchmark-file <path>.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #if defined(TOOLS_ENABLED) && defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
+ 		} else if (arg == "--lsp-port") {
+@@ -2025,13 +2025,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				int port_override = N->get().to_int();
+ 				if (port_override < 0 || port_override > 65535) {
+ 					OS::get_singleton()->print("<port> argument for --lsp-port <port> must be between 0 and 65535.\n");
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 				GDScriptLanguageServer::port_override = port_override;
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing <port> argument for --lsp-port <port>.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #endif // TOOLS_ENABLED && MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
+ #if defined(TOOLS_ENABLED)
+@@ -2040,13 +2040,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				int port_override = N->get().to_int();
+ 				if (port_override < 0 || port_override > 65535) {
+ 					OS::get_singleton()->print("<port> argument for --dap-port <port> must be between 0 and 65535.\n");
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 				DebugAdapterServer::port_override = port_override;
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing <port> argument for --dap-port <port>.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ #endif // TOOLS_ENABLED
+ 		} else if (arg == "--wid") {
+@@ -2054,7 +2054,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				init_embed_parent_window_id = N->get().to_int();
+ 				if (init_embed_parent_window_id == 0) {
+ 					OS::get_singleton()->print("<window_id> argument for --wid <window_id> must be different then 0.\n");
+-					goto error;
++					{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 				}
+ 
+ 				OS::get_singleton()->_embedded_in_editor = true;
+@@ -2063,7 +2063,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 				N = N->next();
+ 			} else {
+ 				OS::get_singleton()->print("Missing <window_id> argument for --wid <window_id>.\n");
+-				goto error;
++				{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 			}
+ 
+ 		} else if (arg == "--" || arg == "++") {
+@@ -2079,7 +2079,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 	if (editor && project_manager) {
+ 		OS::get_singleton()->print(
+ 				"Error: Command line arguments implied opening both editor and project manager, which is not possible. Aborting.\n");
+-		goto error;
++		{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 	}
+ #endif
+ 
+@@ -2098,7 +2098,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 
+ 		if (err) {
+ 			OS::get_singleton()->printerr("Could not connect to remotefs: %s:%i.\n", remotefs.utf8().get_data(), port);
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 		}
+ 	}
+ #endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+@@ -2131,7 +2131,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 
+ 		OS::get_singleton()->alert(error_msg);
+ 
+-		goto error;
++		{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ #endif
+ 	}
+ 
+@@ -2204,7 +2204,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 		} else {
+ 			exit_err = ERR_UNAVAILABLE;
+ 		}
+-		goto error;
++		{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 	} else if (test_rd_creation) {
+ 		// Test OpenGL context and Rendering Device simultaneous creation and exit.
+ 
+@@ -2214,7 +2214,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 		} else {
+ 			exit_err = ERR_UNAVAILABLE;
+ 		}
+-		goto error;
++		{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 	}
+ #endif
+ 
+@@ -2240,7 +2240,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 	if (recovery_mode) {
+ 		if (project_manager || !editor) {
+ 			OS::get_singleton()->print("Error: Recovery mode can only be used in the editor. Aborting.\n");
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 		}
+ 
+ 		Engine::get_singleton()->set_recovery_mode_hint(true);
+@@ -2346,7 +2346,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 			const String error_msg = "Error: Can't run project: no main scene defined in the project.\n";
+ 			OS::get_singleton()->print("%s", error_msg.utf8().get_data());
+ 			OS::get_singleton()->alert(error_msg);
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ #ifdef TOOLS_ENABLED
+ 		}
+ #endif
+@@ -2529,7 +2529,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 			}
+ 
+ 			OS::get_singleton()->print(".\n");
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 		}
+ 	}
+ 	if (renderer_hints.is_empty()) {
+@@ -2580,7 +2580,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 
+ 			OS::get_singleton()->print(".\n");
+ 
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 		}
+ 
+ 		// Set a default renderer if none selected. Try to choose one that matches the driver.
+@@ -2620,7 +2620,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 		}
+ 		if (available_drivers.is_empty()) {
+ 			OS::get_singleton()->print("Unknown renderer name '%s', aborting.\n", rendering_method.utf8().get_data());
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 		}
+ 
+ 		for (int i = 0; i < available_drivers.size(); i++) {
+@@ -2639,7 +2639,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 
+ 			OS::get_singleton()->print(".\n");
+ 
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 		}
+ 	}
+ 
+@@ -2935,7 +2935,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
+ 	if (p_second_phase) {
+ 		exit_err = setup2();
+ 		if (exit_err != OK) {
+-			goto error;
++			{ printf("[switch] setup saiu pela linha %d (exit_err %d)\n", __LINE__, (int)exit_err); goto error; }
+ 		}
+ 	}
+ 

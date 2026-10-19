@@ -1,0 +1,24 @@
+; O exemplo do godot-switch-nro: 3D com sombra, duas faixas de som sincronizadas, Joy-Con e toque.
+; Sem configuração nenhuma do Switch de propósito: `python gsn.py gerar exemplo` prova o caminho padrão
+; (título, ícone e abertura saem daqui).
+config_version=5
+
+[application]
+
+config/name="Godot Switch NRO Exemplo"
+config/version="1.0.0"
+run/main_scene="res://principal.tscn"
+config/features=PackedStringArray("4.7", "Mobile")
+config/icon="res://icone.png"
+boot_splash/bg_color=Color(0.105882354, 0.13725491, 0.2, 1)
+boot_splash/image="res://abertura.png"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[rendering]
+
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
