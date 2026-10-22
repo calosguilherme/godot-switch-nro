@@ -81,12 +81,17 @@ public:
 		double objetos = 0.0;
 		double video_mib = 0.0;
 		double quadro_ms = 0.0; // a iteração inteira do motor, em média
-		double troca_ms = 0.0; // dentro dela, esperando a placa de vídeo (eglSwapBuffers)
+		double troca_ms = 0.0; // dentro dela, esperando a placa de vídeo (eglSwapBuffers; só o OpenGL)
+		double gpu_ms = 0.0; // a placa de vídeo desenhando a tela (timestamps do Godot; 0 se o driver não mede)
+		double desenho_ms = 0.0; // o motor montando o desenho da tela na CPU (cena, culling, listas)
 	};
 	static Medidas medidas;
 
 	// caminho do .nro (argv[0]), guardado antes do Main::setup (godot_switch.cpp)
 	static const char *caminho_nro;
+	// Rede (docs/decisoes.md, D-18; rede_switch.cpp): escreve no log o endereço do console e o tipo de
+	// conexão (ou "sem conexão"); `p_sockets` é o resultado do socketInitializeDefault
+	static void relatar_rede(uint32_t p_sockets);
 	// a versão do jogo, que o gsn.py grava em romfs:/versao.txt (a mesma do .pck); "?" sem o arquivo
 	static char versao_do_jogo[32];
 	static void ler_versao_do_jogo();

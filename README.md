@@ -104,7 +104,8 @@ engine), `--saida <folder>`, `--config <file>`.
 
 ### 5. Test and collect the log
 
-Next to the `.nro` you get `my-game.log` (or `my-game.vulkan.log`), `my-game.saida.txt` (the exit
+Next to the `.nro` you get `my-game.log` (or `my-game.vulkan.log`; the previous run's log is kept as
+`my-game.anterior.log` / `my-game.vulkan.anterior.log`), `my-game.saida.txt` (the exit
 check: "tudo solto" means clean) and, on Vulkan, `vulkan_etapas.txt`. If the console shows the error
 screen, the report is in `sdmc:/atmosphere/crash_reports/`. With `nxlink -s my-game.nro` on the PC
 (same network, console on the hbmenu) the log shows in the terminal.
@@ -213,9 +214,11 @@ console test.
 
 ## Limits
 
-No networking, no C#, no GDExtension, no software keyboard, up to two controllers, some modules off
-(CSG, Theora video, Jolt, complex text shaping), black screen on the very first Vulkan start. List and
-reasons in [docs/pendencias.md](docs/pendencias.md).
+Networking is IPv4 UDP/TCP and ENet only (`PacketPeerUDP`, `ENetMultiplayerPeer`, DNS, `Crypto`), still
+awaiting its first console test; no TLS/HTTPS certificates, WebSocket, WebRTC or UPnP
+([D-18](docs/decisoes.md)). No C#, no GDExtension, no software keyboard, up to two controllers, some
+modules off (CSG, Theora video, Jolt, complex text shaping), black screen on the very first Vulkan
+start. List and reasons in [docs/pendencias.md](docs/pendencias.md).
 
 ## What is here
 

@@ -2,7 +2,7 @@
 
 This repository ports **Godot 4.7.2** to **Nintendo Switch homebrew** (`.nro` on Atmosphère) and
 packages any Godot project for it. Read `README.md` first; the decisions behind every non-obvious
-choice are in `docs/decisoes.md` (D-01…D-17). Docs and code comments are in Brazilian Portuguese;
+choice are in `docs/decisoes.md` (D-01…D-18). Docs and code comments are in Brazilian Portuguese;
 keep writing them in Portuguese. Talk to the user in the language they write in.
 
 ## Layout

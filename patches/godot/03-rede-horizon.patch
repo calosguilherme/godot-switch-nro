@@ -1,0 +1,178 @@
+diff --git a/drivers/unix/ip_unix.cpp b/drivers/unix/ip_unix.cpp
+--- a/drivers/unix/ip_unix.cpp
++++ b/drivers/unix/ip_unix.cpp
+@@ -38,6 +38,8 @@
+ // We could drop this file once we up our API level to 24,
+ // where the NDK's ifaddrs.h supports to needed getifaddrs.
+ #include <thirdparty/misc/ifaddrs-android.h>
++#elif defined(HORIZON_ENABLED)
++// O Horizon (Switch) não tem getifaddrs: o get_local_interfaces vem da plataforma (platform/switch/rede_switch.cpp).
+ #else
+ #ifdef __FreeBSD__
+ #include <sys/types.h>
+@@ -115,6 +117,7 @@
+ 	freeaddrinfo(result);
+ }
+ 
++#ifndef HORIZON_ENABLED
+ void IPUnix::get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const {
+ 	struct ifaddrs *ifAddrStruct = nullptr;
+ 	struct ifaddrs *ifa = nullptr;
+@@ -151,6 +154,7 @@
+ 		freeifaddrs(ifAddrStruct);
+ 	}
+ }
++#endif // !HORIZON_ENABLED
+ 
+ void IPUnix::make_default() {
+ 	_create = _create_unix;
+diff --git a/drivers/unix/net_socket_unix.cpp b/drivers/unix/net_socket_unix.cpp
+--- a/drivers/unix/net_socket_unix.cpp
++++ b/drivers/unix/net_socket_unix.cpp
+@@ -49,7 +49,7 @@
+ #include <cstdio>
+ #include <cstdlib>
+ 
+-#ifdef WEB_ENABLED
++#if defined(WEB_ENABLED) || defined(HORIZON_ENABLED)
+ #include <arpa/inet.h>
+ #endif
+ 
+@@ -97,6 +97,10 @@
+ }
+ 
+ socklen_t NetSocketUnix::_unix_set_sockaddr(struct sockaddr_un *p_addr, const CharString &p_path) {
++#ifdef HORIZON_ENABLED
++	// sem AF_UNIX no Horizon: os _unix_* recusam antes de chegar aqui
++	return 0;
++#else
+ 	memset(p_addr, 0, sizeof(struct sockaddr_un));
+ 	p_addr->sun_family = AF_UNIX;
+ 
+@@ -108,6 +112,7 @@
+ 	memcpy(p_addr->sun_path, p_path.get_data(), path_len);
+ 	p_addr->sun_path[path_len] = '\0';
+ 	return sizeof(struct sockaddr_un);
++#endif
+ }
+ 
+ void NetSocketUnix::_set_ip_port(struct sockaddr_storage *p_addr, IPAddress *r_ip, uint16_t *r_port) {
+@@ -189,8 +194,12 @@
+ }
+ 
+ bool NetSocketUnix::_can_use_path(const CharString &p_path) const {
++#ifdef HORIZON_ENABLED
++	return false;
++#else
+ 	// Path must not exceed maximum path length for Unix domain socket
+ 	return !p_path.is_empty() && (size_t)p_path.length() < sizeof(((sockaddr_un *)nullptr)->sun_path);
++#endif
+ }
+ 
+ _FORCE_INLINE_ Error NetSocketUnix::_change_multicast_group(IPAddress p_ip, String p_if_name, bool p_add) {
+@@ -237,11 +246,16 @@
+ 		memcpy(&greq.imr_interface, if_ip.get_ipv4(), 4);
+ 		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
+ 	} else {
++#ifdef HORIZON_ENABLED
++		// sem IPv6 no Horizon (nem o ipv6_mreq)
++		return ERR_UNAVAILABLE;
++#else
+ 		struct ipv6_mreq greq;
+ 		int sock_opt = p_add ? IPV6_ADD_MEMBERSHIP : IPV6_DROP_MEMBERSHIP;
+ 		memcpy(&greq.ipv6mr_multiaddr, p_ip.get_ipv6(), 16);
+ 		greq.ipv6mr_interface = if_v6id;
+ 		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
++#endif
+ 	}
+ 	ERR_FAIL_COND_V(ret != 0, FAILED);
+ 
+@@ -265,8 +279,9 @@
+ Error NetSocketUnix::_inet_open(Type p_sock_type, IP::Type &r_ip_type) {
+ 	ERR_FAIL_COND_V(r_ip_type > IP::TYPE_ANY || r_ip_type < IP::TYPE_NONE, ERR_INVALID_PARAMETER);
+ 
+-#if defined(__OpenBSD__)
++#if defined(__OpenBSD__) || defined(HORIZON_ENABLED)
+ 	// OpenBSD does not support dual stacking, fallback to IPv4 only.
++	// O Horizon (Switch) não tem IPv6: só IPv4.
+ 	if (r_ip_type == IP::TYPE_ANY) {
+ 		r_ip_type = IP::TYPE_IPV4;
+ 	}
+@@ -316,6 +331,9 @@
+ }
+ 
+ Error NetSocketUnix::_unix_open() {
++#ifdef HORIZON_ENABLED
++	return ERR_UNAVAILABLE;
++#endif
+ 	_sock = socket(AF_UNIX, SOCK_STREAM, 0);
+ 	ERR_FAIL_COND_V(_sock == -1, FAILED);
+ 
+@@ -385,6 +403,9 @@
+ 
+ Error NetSocketUnix::_unix_bind(const CharString &p_path) {
+ 	ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
++#ifdef HORIZON_ENABLED
++	return ERR_UNAVAILABLE;
++#else
+ 
+ 	struct sockaddr_un addr;
+ 	socklen_t addr_size = _unix_set_sockaddr(&addr, p_path);
+@@ -423,6 +444,7 @@
+ 	}
+ 
+ 	return OK;
++#endif
+ }
+ 
+ Error NetSocketUnix::bind(NetSocket::Address p_addr) {
+@@ -484,6 +506,9 @@
+ 
+ Error NetSocketUnix::_unix_connect_to_host(const CharString &p_path) {
+ 	ERR_FAIL_COND_V(!_can_use_path(p_path), ERR_INVALID_PARAMETER);
++#ifdef HORIZON_ENABLED
++	return ERR_UNAVAILABLE;
++#else
+ 
+ 	struct sockaddr_un addr;
+ 	socklen_t addr_size = _unix_set_sockaddr(&addr, p_path);
+@@ -508,6 +533,7 @@
+ 	}
+ 
+ 	return OK;
++#endif
+ }
+ 
+ Error NetSocketUnix::connect_to_host(NetSocket::Address p_addr) {
+@@ -804,6 +830,9 @@
+ }
+ 
+ Ref<NetSocket> NetSocketUnix::_unix_accept() {
++#ifdef HORIZON_ENABLED
++	return Ref<NetSocket>();
++#else
+ 	struct sockaddr_un addr;
+ 	socklen_t addr_len = sizeof(addr);
+ 
+@@ -820,6 +849,7 @@
+ 	ret->_unix_path = _unix_path;
+ 	ret->set_blocking_enabled(false);
+ 	return Ref<NetSocket>(ret);
++#endif
+ }
+ 
+ Ref<NetSocket> NetSocketUnix::accept(NetSocket::Address &r_addr) {
+diff --git a/drivers/unix/net_socket_unix.h b/drivers/unix/net_socket_unix.h
+--- a/drivers/unix/net_socket_unix.h
++++ b/drivers/unix/net_socket_unix.h
+@@ -35,7 +35,10 @@
+ #include "core/io/net_socket.h"
+ 
+ #include <sys/socket.h>
++#ifndef HORIZON_ENABLED
++// O Horizon (Switch) não tem sockets AF_UNIX nem o sys/un.h: só a parte IP vale lá.
+ #include <sys/un.h>
++#endif
+ 
+ class NetSocketUnix : public NetSocket {
+ 	GDSOFTCLASS(NetSocketUnix, NetSocket);
