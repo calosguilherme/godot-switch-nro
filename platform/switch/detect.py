@@ -64,11 +64,17 @@ def get_flags():
         "module_mobile_vr_enabled": False,
         "module_camera_enabled": False,
         "module_theora_enabled": False,
+        # rede (docs/decisoes.md, D-18): o ENet (UDP, multijogador) e o mbedTLS (o Crypto: bytes aleatórios,
+        # chaves, hash; o TLS em si ainda sem uso) ligados; UPnP, WebRTC e WebSocket fora
         "module_upnp_enabled": False,
-        "module_enet_enabled": False,
+        "module_enet_enabled": True,
         "module_webrtc_enabled": False,
         "module_websocket_enabled": False,
-        "module_mbedtls_enabled": False,
+        "module_mbedtls_enabled": True,
+        # sem o pacote de certificados embutido: com o mbedTLS, todo jogo leria ~140 certificados na abertura
+        # (Crypto::load_default_certificates) sem usar HTTPS. Quem precisar de TLS liga de volta ou aponta o
+        # network/tls/certificate_bundle_override do projeto
+        "builtin_certs": False,
         "module_raycast_enabled": False,
         "module_lightmapper_rd_enabled": False,
         "module_betsy_enabled": False,
@@ -118,10 +124,10 @@ def configure(env: "SConsEnvironment"):
     env.Append(
         CPPDEFINES=[
             "__SWITCH__",
+            # HORIZON_ENABLED também guia o remendo 03-rede-horizon.patch (docs/decisoes.md, D-18): sem AF_UNIX,
+            # sem IPv6 e sem getifaddrs no drivers/unix; o resto da rede (IP, sockets UDP/TCP) é o do Unix
             "HORIZON_ENABLED",
             "UNIX_ENABLED",
-            # sem sockets Unix nem rede de jogo (o nxlink usa os sockets da libnx por fora)
-            "UNIX_SOCKET_UNAVAILABLE",
             # a newlib não tem pthread_setname_np
             "PTHREAD_NO_RENAME",
         ]

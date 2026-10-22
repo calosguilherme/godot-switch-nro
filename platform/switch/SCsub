@@ -9,6 +9,8 @@ arquivos = [
     "display_server_switch.cpp",
     "audio_driver_switch.cpp",
     "joypad_switch.cpp",
+    "rede_switch.cpp",
+    "mbedtls_switch.cpp",
     "compat/posix_switch.cpp",
 ]
 if env["vulkan"]:

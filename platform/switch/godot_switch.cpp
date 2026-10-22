@@ -180,6 +180,16 @@ static bool _abrir_log(const char *p_nro) {
 	} else {
 		strncat(caminho, ".log", sizeof(caminho) - strlen(caminho) - 1);
 	}
+	// O log da abertura anterior fica como <nome>.anterior.log: reabrir o jogo (ou a volta do .vulkan ao
+	// .nro) apagava o log da sessão que se queria ler (docs/decisoes.md, D-03)
+	char anterior[520];
+	snprintf(anterior, sizeof(anterior), "%s", caminho);
+	char *fim = strrchr(anterior, '.');
+	if (fim) {
+		strcpy(fim, ".anterior.log");
+		remove(anterior);
+		rename(caminho, anterior);
+	}
 	// O cartão do Switch não deixa abrir o mesmo arquivo duas vezes para escrita: abre uma vez e
 	// aponta o stdout e o stderr para ele (dup2, como o nxlinkStdio da libnx faz com o socket).
 	int fd = open(caminho, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -251,9 +261,9 @@ static void _pulso(void *) {
 		// desta thread derruba o processo
 		const OS_Switch::Medidas m = OS_Switch::medidas;
 		if (m.prontas) {
-			printf("[switch] pulso: %llu s%s, %.0f FPS, malloc %llu MiB (pico %llu MiB), quadro %.1f ms (espera da GPU %.1f ms; pior script do segundo %.1f ms; física %.1f ms), %.0f desenhos, %.0f objetos, vídeo %.0f MiB\n",
+			printf("[switch] pulso: %llu s%s, %.0f FPS, malloc %llu MiB (pico %llu MiB), quadro %.1f ms (GPU %.1f ms; desenho na CPU %.1f ms; espera da GPU %.1f ms; processo %.1f ms; física %.1f ms), %.0f desenhos, %.0f objetos, vídeo %.0f MiB\n",
 					(unsigned long long)(ms / 1000), OS_Switch::acelerado ? " (acelerado)" : "", fps, (unsigned long long)(usada >> 20), (unsigned long long)(total >> 20),
-					m.quadro_ms, m.troca_ms, m.processo_ms, m.fisica_ms, m.desenhos, m.objetos, m.video_mib);
+					m.quadro_ms, m.gpu_ms, m.desenho_ms, m.troca_ms, m.processo_ms, m.fisica_ms, m.desenhos, m.objetos, m.video_mib);
 		} else {
 			printf("[switch] pulso: %llu s, malloc %llu MiB (pico %llu MiB)\n", (unsigned long long)(ms / 1000), (unsigned long long)(usada >> 20), (unsigned long long)(total >> 20));
 		}
@@ -496,7 +506,11 @@ int main(int argc, char *argv[]) {
 		}
 		strncat(_caminho_saida, ".saida.txt", sizeof(_caminho_saida) - strlen(_caminho_saida) - 1);
 	}
-	socketInitializeDefault();
+	// Os sockets BSD da libnx: o nxlink e a rede do jogo (docs/decisoes.md, D-18). A configuração padrão basta
+	// para o ENet e o UDP: cada socket UDP recebe 42 KiB (0xA500, ~30 pacotes do ENet de 1400 bytes entre dois
+	// quadros) e manda 9 KiB; 3 sessões do serviço bsd:u são 3 chamadas ao mesmo tempo, e os sockets do Godot
+	// são não bloqueantes (cada chamada volta logo). Fechados no socketExit, depois do Main::cleanup.
+	const Result sockets = socketInitializeDefault();
 #if !defined(GLES3_ENABLED)
 	_marcar_etapa("4 sockets");
 #endif
@@ -522,6 +536,7 @@ int main(int argc, char *argv[]) {
 			"Vulkan",
 #endif
 			exec, argc, appletGetAppletType() == AppletType_Application ? "título (memória cheia)" : "applet (memória curta)");
+	OS_Switch::relatar_rede(sockets);
 
 #if defined(GLES3_ENABLED)
 	if (_abrir_o_vulkan(exec)) {
@@ -529,6 +544,7 @@ int main(int argc, char *argv[]) {
 		romfsExit();
 		socketExit();
 		_conferir_saida(stdout, "passando a vez");
+		fsync(STDOUT_FILENO);
 		return 0;
 	}
 #else
@@ -670,5 +686,8 @@ int main(int argc, char *argv[]) {
 	romfsExit();
 	socketExit();
 	_conferir_saida(stdout, "fim do main");
+	// o log vai ao cartão sem buffer, mas o tamanho do arquivo só se grava no fsync (o do pulso, a cada 5 s):
+	// sem este, o fim do log (a saída do jogo, "fim do laço", "saiu", esta conferência) se perdia ao fechar
+	fsync(STDOUT_FILENO);
 	return os.get_exit_code();
 }

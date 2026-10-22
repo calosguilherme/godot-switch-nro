@@ -13,9 +13,13 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/os/thread.h"
 #include "core/input/input.h"
 #include "main/main.h"
 #include "main/performance.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "switch_wrapper.h"
 
@@ -105,8 +109,25 @@ void OS_Switch::acelerar(bool p_ligar) {
 }
 OS_Switch::Medidas OS_Switch::medidas;
 
+// A prioridade das threads do Godot (Thread.Priority no GDScript; docs/decisoes.md, D-15): o drivers/unix
+// não a aplica, e toda pthread da libnx nasce em 59, abaixo da principal (44). PRIORITY_HIGH passa a 0x2B,
+// acima da principal, como o pulso e a sentinela: para trabalho curto e periódico que não pode esperar a
+// principal (o som misturado à frente); uma thread alta que não dorme toma o núcleo da principal. NORMAL e
+// LOW ficam em 59.
+static Error _nome_da_thread(const String &) {
+	return ERR_UNAVAILABLE; // a newlib não tem pthread_setname_np (PTHREAD_NO_RENAME)
+}
+
+static void _prioridade_da_thread(Thread::Priority p_prioridade) {
+	if (p_prioridade == Thread::PRIORITY_HIGH) {
+		svcSetThreadPriority(threadGetCurHandle(), 0x2B);
+	}
+}
+
 void OS_Switch::initialize() {
 	OS_Unix::initialize_core();
+	// depois do initialize_core, que registra as do drivers/unix (só o nome)
+	Thread::_set_platform_functions({ .set_name = _nome_da_thread, .set_priority = _prioridade_da_thread });
 }
 
 void OS_Switch::initialize_joypads() {
@@ -302,6 +323,17 @@ void OS_Switch::run() {
 	uint64_t iteracao_us = 0;
 	double processo_us = 0.0;
 	double fisica_us = 0.0;
+	// o tempo da placa de vídeo e o do motor montando o desenho, medidos pelo Godot no viewport raiz: no Vulkan
+	// a troca não espera a placa (a "espera da GPU" sai 0) e, sem isto, o pulso não dizia se o quadro pesado
+	// era da placa ou da CPU
+	RID tela;
+	SceneTree *arvore = Object::cast_to<SceneTree>(get_main_loop());
+	if (arvore && arvore->get_root() && RenderingServer::get_singleton()) {
+		tela = arvore->get_root()->get_viewport_rid();
+		RenderingServer::get_singleton()->viewport_set_measure_render_time(tela, true);
+	}
+	double gpu_us = 0.0;
+	double desenho_us = 0.0;
 	// appletMainLoop() fica falso quando o sistema pede para fechar (HOME → fechar o software)
 	while (appletMainLoop()) {
 		if (joypad) {
@@ -338,6 +370,10 @@ void OS_Switch::run() {
 			processo_us += Performance::get_singleton()->get_monitor(Performance::TIME_PROCESS) * 1000000.0;
 			fisica_us += Performance::get_singleton()->get_monitor(Performance::TIME_PHYSICS_PROCESS) * 1000000.0;
 		}
+		if (tela.is_valid()) {
+			gpu_us += RenderingServer::get_singleton()->viewport_get_measured_render_time_gpu(tela) * 1000.0;
+			desenho_us += RenderingServer::get_singleton()->viewport_get_measured_render_time_cpu(tela) * 1000.0;
+		}
 		// a cada ~segundo: o turbo (se o jogo pediu) é reaplicado, e os números da renderização são
 		// guardados para o pulso do log (godot_switch.cpp)
 		if (quadros % 60 == 59 && SwitchHorizon::get_singleton()) {
@@ -350,6 +386,10 @@ void OS_Switch::run() {
 			m.fisica_ms = fisica_us / 60.0 / 1000.0;
 			processo_us = 0.0;
 			fisica_us = 0.0;
+			m.gpu_ms = gpu_us / 60.0 / 1000.0;
+			m.desenho_ms = desenho_us / 60.0 / 1000.0;
+			gpu_us = 0.0;
+			desenho_us = 0.0;
 			m.desenhos = perf->get_monitor(Performance::RENDER_TOTAL_DRAW_CALLS_IN_FRAME);
 			m.objetos = perf->get_monitor(Performance::RENDER_TOTAL_OBJECTS_IN_FRAME);
 			m.video_mib = perf->get_monitor(Performance::RENDER_VIDEO_MEM_USED) / (1024.0 * 1024.0);
