@@ -365,7 +365,7 @@ void OS_Switch::run() {
 		} else if (este_us > (u64)SUSPENSO_MS * 1000) {
 			printf("[switch] quadro de %d ms\n", (int)(este_us / 1000));
 		}
-		// o tempo de script e cenas (process) e o da física, somados por quadro para a média do pulso
+		// o TIME_PROCESS (o pior quadro do segundo, processo + desenho; D-15) e o da física, somados para a média
 		if (Performance::get_singleton()) {
 			processo_us += Performance::get_singleton()->get_monitor(Performance::TIME_PROCESS) * 1000000.0;
 			fisica_us += Performance::get_singleton()->get_monitor(Performance::TIME_PHYSICS_PROCESS) * 1000000.0;
@@ -395,8 +395,10 @@ void OS_Switch::run() {
 			m.video_mib = perf->get_monitor(Performance::RENDER_VIDEO_MEM_USED) / (1024.0 * 1024.0);
 			m.quadro_ms = iteracao_us / 60.0 / 1000.0;
 			m.troca_ms = DisplayServerSwitch::troca_us / 60.0 / 1000.0;
+			m.envio_ms = DisplayServerSwitch::envio_us / 60.0 / 1000.0;
 			iteracao_us = 0;
 			DisplayServerSwitch::troca_us = 0;
+			DisplayServerSwitch::envio_us = 0;
 			m.prontas = true;
 			medidas = m;
 		}

@@ -32,7 +32,8 @@ na branch `batida-capixaba` (`jogos/batida-capixaba/historico.md`).
 | O fim do log na saída | 0.2.28, 0.2.30 | **falhou**: o log parava no último pulso (sem "fim do laço"/"saiu"); corrigido no port 0.3.3 (`fsync` no fim do `main`), a provar |
 | O fim do log na saída, com o `fsync` (port 0.3.3) | 0.2.32 | **ainda sem o fim**: o log para no último pulso. A conferir como o jogo foi fechado (HOME → fechar o software para abrir o DBI: o sistema pode encerrar o processo antes do fim do `main`, e o `saida.txt` seria o da sessão anterior) |
 | O log da sessão anterior (`<jogo>.anterior.log`, port 0.3.3) | 0.2.32 | **passou**: `batida.anterior.log` e `batida.vulkan.anterior.log` no cartão |
-| GPU por quadro no Batida (port 0.3.3) | 0.2.32 | menu 16 ms, Ato 3 17–19 ms, Ato 7 27,7 ms; o processo na CPU (29–46 ms) é o limite em todas as telas |
+| Espera pelas cercas e envio do Vulkan (port 0.3.5) | 0.2.34 | **a placa e a CPU não estão em série**: `vkWaitForFences` 0,0–0,2 ms e `vkQueueSubmit` 0,3 ms por quadro. Com 30 FPS fixos, o pior quadro do segundo é 28–35 ms sem turbo e 18–22 ms com turbo (Batida, Ato 3 e Ato 7) |
+| GPU por quadro no Batida (port 0.3.3) | 0.2.32 | menu 16 ms, Ato 3 17–19 ms, Ato 7 27,7 ms; o quadro ≈ os scripts do jogo + a GPU (hipótese: a placa e a CPU em série no Vulkan, a medir com o port 0.3.5) |
 
 ## Medições de referência (console)
 

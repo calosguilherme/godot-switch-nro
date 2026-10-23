@@ -75,13 +75,14 @@ public:
 	// números da renderização, guardados pelo laço principal a cada segundo para o pulso do log
 	struct Medidas {
 		bool prontas = false;
-		double processo_ms = 0.0; // script e cenas (o process do Godot), média por quadro
+		double processo_ms = 0.0; // o Performance::TIME_PROCESS: o PIOR quadro do último segundo (processo + desenho)
 		double fisica_ms = 0.0; // os passos de física do quadro, média
 		double desenhos = 0.0;
 		double objetos = 0.0;
 		double video_mib = 0.0;
 		double quadro_ms = 0.0; // a iteração inteira do motor, em média
-		double troca_ms = 0.0; // dentro dela, esperando a placa de vídeo (eglSwapBuffers; só o OpenGL)
+		double troca_ms = 0.0; // dentro dela, esperando a placa de vídeo (OpenGL: eglSwapBuffers; Vulkan: as cercas)
+		double envio_ms = 0.0; // Vulkan: dentro do vkQueueSubmit
 		double gpu_ms = 0.0; // a placa de vídeo desenhando a tela (timestamps do Godot; 0 se o driver não mede)
 		double desenho_ms = 0.0; // o motor montando o desenho da tela na CPU (cena, culling, listas)
 	};

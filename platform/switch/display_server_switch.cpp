@@ -251,6 +251,7 @@ void DisplayServerSwitch::process_events() {
 }
 
 uint64_t DisplayServerSwitch::troca_us = 0;
+uint64_t DisplayServerSwitch::envio_us = 0;
 
 void DisplayServerSwitch::avisar_janela(DisplayServerEnums::WindowEvent p_evento) {
 	if (window_event_callback.is_valid()) {
