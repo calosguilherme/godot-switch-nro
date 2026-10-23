@@ -31,6 +31,16 @@ As do port (valem para qualquer jogo) estão em `docs/pendencias.md`.
    funcionou** (relato do autor). **Jogo rápido, em parte:** enquanto a thread descomprime as músicas, o
    menu fica um pouco lento e o trecho não toca; quando termina, o FPS volta, mas demora. Ato 3 e Ato 7
    não foram jogados.
+9. **0.2.34** (motor 0.3.5: a espera pelas cercas e o envio do Vulkan no pulso; jogo = commit b92ef4a,
+   exportado da cópia de trabalho antes do commit, sem mudança depois: notas e músicas prontas no conteúdo (DEC-215), 30 FPS fixos no Switch
+   (DEC-216), a festa mais leve na placa (DEC-217: o povo econômico ligado no Switch, MSAA 2×; `--povo_cheio`
+   em `user://args.txt` desliga a economia), a montagem com 25 ms por quadro e o log por bloco (DEC-218)).
+   No cartão, conferida por hash. A 0.2.33 (DEC-215/216) foi gerada e não chegou ao cartão.
+   **Resultado:** "tudo bem melhor" (relato). Ato 3 e Ato 7 a 30 FPS (GPU 13 e 18 ms); sem turbo, o pior
+   quadro do segundo bate 28–35 ms e dá a travadinha 30 → 29 (no Ato 3 e no Ato 5); com turbo, 18–22 ms e
+   nenhuma queda. A série placa/CPU descartada (cercas 0,0–0,2 ms). Cortina: blocos ≤ 125 ms, mas os
+   quadros com a cortina ficam em ~67 ms mesmo sem montagem e com os scripts em ~1 ms (a investigar: as
+   leituras em thread disputando o .pck, ou envios à placa). Abertura: a rua montada num quadro (3,3 s).
 7. **0.2.31:** gerada (motor 0.3.3, jogo sem commit com a roda, a pausa e o trecho pronto), mas a cópia
    para o cartão falhou (o DBI travou) e foi substituída pela 0.2.32 sem rodar.
 8. **0.2.32** (motor 0.3.3: `fsync` no fim do log e o `<jogo>.anterior.log`; jogo do commit 4ee627d:
@@ -40,9 +50,12 @@ As do port (valem para qualquer jogo) estão em `docs/pendencias.md`.
    **Resultado:** Jogo rápido: trava ao entrar na lista e fica a 12–20 FPS sem som por ~25 s (as notas de
    dificuldade calculadas no console; `_draw` 36–40 ms até elas chegarem), depois 36 FPS. Ato 3: 31–35
    FPS (a roda 6–7 ms, antes 17), oscilando: pedido `Engine.max_fps = 30` no Switch. Ato 7: 22 FPS,
-   GPU 27,7 ms, processo 46 ms com os scripts do jogo só em ~20 (o resto: o motor animando a cena,
-   suspeita dos esqueletos da multidão). Pedidos ao agente do jogo: notas prontas no conteúdo, 30 FPS
-   fixos no Switch, medir e aliviar as animações da festa.
+   GPU 27,7 ms, quadro 46 ms ≈ os scripts do jogo (~20 ms) + a GPU: a placa e a CPU parecem em série
+   no Vulkan do port (a leitura de "o motor animando a cena" estava errada: o censo do jogo, DEC-217, achou
+   0,1 ms de esqueletos; o "processo" do pulso é o pior quadro do segundo, com o desenho). Pedidos ao
+   agente do jogo: notas prontas no conteúdo (DEC-215), 30 FPS fixos no Switch (DEC-216), aliviar a GPU
+   da festa (DEC-217: o povo econômico ligado no Switch e MSAA 2×). No port 0.3.5: a espera pelas cercas e
+   o envio do Vulkan no pulso, para provar a série.
 
 ## Relatos da 0.2.28 (2026-10-22, no console, ainda sem log)
 
