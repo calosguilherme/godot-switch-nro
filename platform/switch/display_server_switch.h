@@ -94,8 +94,11 @@ public:
 	void gl_window_make_current(DisplayServerEnums::WindowID p_window_id) override;
 #endif
 
-	// tempo esperando a troca de quadro (a placa de vídeo terminar), somado em µs: o OS_Switch lê e zera
+	// tempo esperando a placa de vídeo terminar, somado em µs (OpenGL: a troca do EGL; Vulkan: as cercas,
+	// vkWaitForFences): o OS_Switch lê e zera
 	static uint64_t troca_us;
+	// Vulkan: o tempo dentro do vkQueueSubmit, somado em µs
+	static uint64_t envio_us;
 
 	DisplayServerSwitch(const String &p_rendering_driver, DisplayServerEnums::VSyncMode p_vsync_mode, Error &r_error);
 	~DisplayServerSwitch();

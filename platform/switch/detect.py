@@ -137,6 +137,8 @@ def configure(env: "SConsEnvironment"):
     if env["vulkan"]:
         # Vulkan pelo NVK (docs/decisoes.md): sem carregador (use_volk=no), ligado direto; a superfície é a VK_NN_vi_surface
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED", "VK_USE_PLATFORM_VI_NN"])
+        # a espera pelas cercas e o envio medidos no pulso (rendering_context_driver_vulkan_switch.cpp, D-15)
+        env.Append(LINKFLAGS=["-Wl,--wrap=vkWaitForFences", "-Wl,--wrap=vkQueueSubmit"])
         if env["nvk"]:
             env.Append(LIBPATH=[env["nvk"]])
         # do build-switch.sh do mesa-switch: o libvulkan.a já junta o NVK, o NIR, o NAK (com o Rust) e o runtime

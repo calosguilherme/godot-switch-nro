@@ -201,11 +201,16 @@ no README ("Para o jogo"). Nomes em português, como o resto do port.
   média de `viewport_get_measured_render_time_gpu` (a placa, por timestamps) e `_cpu` (o motor montando
   o desenho: cena, culling, listas). No OpenGL os timestamps só existem sobre GL de desktop; sem eles, a
   GPU sai 0 e vale a espera da troca.
-- **[medido] "processo" no pulso (0.3.4; até o 0.3.3 o rótulo era "pior script do segundo", errado):** é a
-  média do `Performance::TIME_PROCESS`, o passo de processo inteiro (todos os `_process`, animações,
-  esqueletos). No Batida 0.2.32 ele bate com o quadro em todas as telas: o jogo é limitado pela CPU no
-  processo, com a placa em 16–28 ms. O que o processo tem a mais que os custos medidos pelo jogo é o
-  motor processando a cena (no Ato 7, ~26 ms: as animações com esqueleto da multidão, suspeita).
+- **[código] "pior quadro do segundo" no pulso (0.3.5):** é o `Performance::TIME_PROCESS`, que o
+  `Main::iteration` grava uma vez por segundo com o **maior** passo do segundo, do processo até o fim do
+  `RenderingServer::draw` (com as esperas pela placa). Não é a média nem só script: passa do quadro médio.
+  O 0.3.4 o chamou de "processo" e a leitura do Ato 7 do Batida (0.2.32) como "~26 ms do motor fora dos
+  scripts" estava errada; o censo do jogo achou 0,1 ms de esqueletos, e a sobra acompanha a GPU.
+- **[código] Espera e envio no Vulkan (0.3.5):** `vkWaitForFences` e `vkQueueSubmit` embrulhados no
+  ligador (`-Wl,--wrap`, `rendering_context_driver_vulkan_switch.cpp`): a espera pelas cercas vira a "espera
+  da GPU" do pulso, e o tempo do envio sai como "envio". Hipótese a provar (Batida 0.2.32: quadro ≈ scripts
+  + GPU): a placa e a CPU em série no Vulkan do port. Se o envio levar ~a GPU, o NVK espera a placa no
+  `vkQueueSubmit`; se a espera pelas cercas levar, o Godot espera o quadro anterior inteiro.
 - **Marcas de passagem do Vulkan:** `vulkan_etapas.txt` ao lado do executável, uma linha por etapa
   vencida antes do `main` (userAppInit, construtores, main, sockets, log). Antes do `main` o caminho vem
   da linha de comando crua do carregador (`envGetArgv`).

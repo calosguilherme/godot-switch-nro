@@ -261,9 +261,9 @@ static void _pulso(void *) {
 		// desta thread derruba o processo
 		const OS_Switch::Medidas m = OS_Switch::medidas;
 		if (m.prontas) {
-			printf("[switch] pulso: %llu s%s, %.0f FPS, malloc %llu MiB (pico %llu MiB), quadro %.1f ms (GPU %.1f ms; desenho na CPU %.1f ms; espera da GPU %.1f ms; processo %.1f ms; física %.1f ms), %.0f desenhos, %.0f objetos, vídeo %.0f MiB\n",
+			printf("[switch] pulso: %llu s%s, %.0f FPS, malloc %llu MiB (pico %llu MiB), quadro %.1f ms (GPU %.1f ms; desenho na CPU %.1f ms; espera da GPU %.1f ms; envio %.1f ms; pior quadro do segundo %.1f ms; física %.1f ms), %.0f desenhos, %.0f objetos, vídeo %.0f MiB\n",
 					(unsigned long long)(ms / 1000), OS_Switch::acelerado ? " (acelerado)" : "", fps, (unsigned long long)(usada >> 20), (unsigned long long)(total >> 20),
-					m.quadro_ms, m.gpu_ms, m.desenho_ms, m.troca_ms, m.processo_ms, m.fisica_ms, m.desenhos, m.objetos, m.video_mib);
+					m.quadro_ms, m.gpu_ms, m.desenho_ms, m.troca_ms, m.envio_ms, m.processo_ms, m.fisica_ms, m.desenhos, m.objetos, m.video_mib);
 		} else {
 			printf("[switch] pulso: %llu s, malloc %llu MiB (pico %llu MiB)\n", (unsigned long long)(ms / 1000), (unsigned long long)(usada >> 20), (unsigned long long)(total >> 20));
 		}
