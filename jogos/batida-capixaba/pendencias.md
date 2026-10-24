@@ -41,6 +41,86 @@ As do port (valem para qualquer jogo) estão em `docs/pendencias.md`.
    nenhuma queda. A série placa/CPU descartada (cercas 0,0–0,2 ms). Cortina: blocos ≤ 125 ms, mas os
    quadros com a cortina ficam em ~67 ms mesmo sem montagem e com os scripts em ~1 ms (a investigar: as
    leituras em thread disputando o .pck, ou envios à placa). Abertura: a rua montada num quadro (3,3 s).
+18. **0.2.45** (motor 0.3.9; jogo 39c1208: na dupla, o erro treme só a pista de quem errou, DEC-240). No
+   cartão, conferida por hash (o DBI travou no .pck; reiniciado, o .pck foi de novo). Conferir: a dupla, o
+   tremor só na pista de quem errou.
+17. **0.2.44** (motor 0.3.9: a apresentação no pulso e `[switch] apresentação longa` acima de 100 ms; jogo
+   56dd8d4: o HUD da dupla em folhas guardadas (DEC-238), a banda em dupla sem entrar no povo (DEC-239)). No
+   cartão, conferida por hash. Conferir: a dupla na base sem turbo (terra-brasileira e a festa), o `_draw` e
+   os picos; a festa em dupla sem ninguém dentro do povo; qualquer `apresentação longa`.
+   **Resultado:** "me pareceu tudo certo agora" (o criador). A dupla na base sem turbo: 1 pico em 28 s (antes
+   78 em 49 s); o turbo na base descartado. A cigana no portátil sem turbo: 7 picos em 175 s. As 5
+   `apresentação longa` (151–531 ms) caem todas ao encaixar ou tirar da base (a troca de tela); fora disso,
+   0,4–0,5 ms. Pedido novo do criador: no multiplayer, o tremor do erro só na parte de quem errou.
+16. **0.2.43** (motor 0.3.8; jogo f4b8313: a guarda nas músicas da mata a 65% no portátil, DEC-237). No
+   cartão, conferida por hash. Conferir: a no-caminho-da-cidade e a voce-falou no portátil sem turbo; a
+   cigana na base e sem turbo; uma música em dupla.
+   **Resultado:** "resto tudo ok" (o criador). A guarda na mata resolvida no portátil sem turbo (1 e 0
+   picos). A cigana a 30 com um flick isolado (305 ms de espera, sem trabalho). A dupla na base abaixo de 30
+   pela CPU (o `_draw` do HUD 12–16 ms em dupla, a roda 6–10): proposta de turbo automático na base. Bug
+   visual: tocadores e uma dançarina entrando um no outro do lado direito (a confirmar o modo e o cenário).
+15. **0.2.42** (motor 0.3.8; jogo 38461cd: a pose da banda decidida antes da música, cheia na base ou com
+   turbo e meio quadro com o quadro fora da vez seguindo o movimento no portátil sem turbo, sem volta no meio
+   da música (DEC-232/236); a mata da guarda sem a fileira de fora e a 75% no portátil (DEC-233); a mata e a
+   guarda na mata a 60% na base em 1080p (DEC-235)). No cartão, conferida por hash. Conferir: a
+   no-caminho-da-cidade e a voce-falou no portátil sem turbo e na base; a cigana na base; as linhas `banda:`.
+   **Resultado:** a banda como planejado (meio quadro seguindo o movimento no portátil sem turbo; cheia na
+   base e com turbo). A festa no portátil sem turbo: 0 picos. A no-caminho-da-cidade: 30 na base (60% FSR);
+   no portátil sem turbo, ainda 383 de 877 quadros acima de 40 ms, trechos a 20 FPS no começo (a mata: GPU
+   20–22 ms nos timestamps, espera 22 ms); com turbo, quedas a 27–29 (o turbo não acelera a GPU). Sem log
+   ainda: a voce-falou, a cigana na base, a dupla. Pedido ao agente do jogo: mais alívio de pixel na zona da
+   mata da guarda, só no portátil.
+14. **0.2.41** (motor 0.3.8; jogo 2b23d15: na base a janela em 1080p e o 3D a 75% (1440×810) com FSR 1.0
+   (DEC-230); a pose da banda a cada quadro, com a válvula que volta a cada 2 quando pesa (DEC-231)). No
+   cartão, conferida por hash. Conferir: `[switch] 3D a 75% (..., na base, 1920x1080, FSR)` e a GPU na base;
+   as linhas `[jogo] banda:` (se cai para meio quadro no portátil sem turbo); o pior quadro sem turbo.
+   **Resultado:** a festa na base, 1080p com o 3D a 75% FSR e o MSAA 4×, a 30 FPS (0 picos acima de 40 ms).
+   A banda caiu para meio quadro logo no começo da festa no portátil sem turbo e não voltou (a regra de volta
+   não acontece com o trabalho típico de 27–30 ms): o criador percebeu. Uma música da guarda ("você falou
+   que nosso congo não saía") a ~20 FPS no portátil e na base: GPU 28–35 ms no portátil, custo de pixel
+   (as mesmas chamadas e objetos da barco-nagua, que roda a 30). Pedidos ao agente do jogo.
+   **Varredura do jogo (DEC-234, a pedido do criador):** a causa da voce-falou é a folhagem recortada
+   (discard) da zona da mata da guarda, sem as proteções do cenário da mata. A no-caminho-da-cidade (a 1ª da
+   guarda) tem a mesma folhagem. Sem medida no console: a mata na base em 1080p (cigana, dolores,
+   toca-meu-casaco-bate-meu-tambor, desafio do Ato 2) e o modo dupla (+50% de transparente/aditivo e de
+   chamadas; o pior caso é a guarda na mata). Teste que confirma: a no-caminho-da-cidade e a cigana no
+   portátil e na base, e uma música da festa em dupla.
+13. **0.2.40** (motor 0.3.8: 1920×1080 na base, no Vulkan, D-20; jogo 027eef5: MSAA 4× na base e 2× no
+   portátil (DEC-228), as folhas guardadas se refazem quando a janela muda (DEC-229)). No cartão, conferida
+   por hash. A 0.2.39 (021bfb1, motor 0.3.7, o MSAA sem o 1080p) chegou ao cartão e foi substituída sem
+   teste. Conferir: `[switch] tela: 1920x1080 (na base)` e `[switch] MSAA 4× (na base)`; o serrilhado na TV;
+   a GPU na base (estimativa 12–17 ms) e o 30 FPS; encaixar e tirar com o jogo aberto, no menu e na partida.
+   **Resultado:** a troca ao vivo funcionou (`tela: 1920x1080` e `1280x720`, sem cair). Na base, 20 FPS
+   cravados: GPU 22–23 ms (timestamps) e a espera pelas cercas 18–22 ms por quadro (antes ~0); o `_draw` do
+   HUD sobe de ~7 para ~14 ms em 1080p. Pedido ao agente do jogo: na base, o 3D a 75% (1440×810) com o
+   MSAA 4×, a janela continua 1080p. Relato do criador: a banda parece "GIF" no Switch (a pose a cada 2
+   quadros, DEC-208): pedido para voltar a pose cheia sem perder os 30 FPS.
+12. **0.2.38** (motor 0.3.7: o pulso sem o `mallinfo`, com `heap N MiB` e o tempo do próprio pulso; jogo
+   7ebfff8: pico só acima de 40 ms, "por trabalho" ou "por espera" (DEC-226), os blocos da cortina divididos
+   e os shaders do povo/folhas/chuva/vagalumes compilados na abertura (DEC-227)). Conferir: sem os quadros de
+   ~130 ms a cada 5,1 s; `[jogo] montagem:` da festa, puxada e guarda abaixo de ~30 ms; o tempo da abertura;
+   os picos "por trabalho" na música; `o pulso: memória X ms, gravação Y ms`.
+   **Resultado:** "não caiu dos 30 FPS e o flick não aconteceu mais" (o criador). O pulso: memória 0,0 ms,
+   gravação ~3,5 ms (o mallinfo era a parada de 5,1 s); 0–2 picos por música acima de 40 ms; nenhum bloco
+   da montagem acima de ~37 ms fora da abertura. Na base (TV), a GPU cai para ~6,3 ms (no portátil 13–17):
+   o criador acha o serrilhado evidente na TV. Pedido ao agente do jogo: MSAA 4× só na base; proposta do
+   port: desenhar em 1920×1080 na base.
+11. **0.2.37** (motor 0.3.6: o ritmo pela tela, intervalo de troca 2 com o max_fps 30, D-19; jogo c5b1d17: a
+   linha `[jogo] pico:` na partida, guardada e escrita no fim (DEC-223), e o que nascia no meio da festa feito
+   na montagem, com o aquecer atrás da cortina (DEC-224)). No cartão, conferida por hash. Conferir: o contador
+   fixo em 30 com turbo (sem os 29), as linhas `[jogo] pico:` e `[jogo] picos:` da festa sem turbo, e
+   `[switch] ritmo:` no log.
+10. **0.2.36** (motor 0.3.5; jogo 9431c20, no cartão conferida por hash; a 0.2.35, com o 1b4db12, foi gerada
+   e não chegou ao cartão). O 9431c20 = o 1b4db12 + o Modo DEV de volta à Configuração (DEC-222).
+   **Resultado (só a festa no log):** com turbo, 30 cravado (pior quadro 18–22 ms); sem turbo, 30 com o pior
+   quadro em 27–30 ms e dois picos isolados de 59–62 ms (a queda que o criador vê). Cortina: 94 quadros em
+   3,3 s (~28 FPS; antes ~15). O criador escolheu cortar os picos para ter folga sem turbo, começando pelo
+   Ato 7 (pedido ao agente do jogo: a linha `[jogo] pico:` na partida e os picos da festa). O que vem
+   do 1b4db12: a cortina mais leve com a linha `[jogo] cortina: quadro N ms`
+   por partes (DEC-219), os picos dos Atos 3 e 5 (a hora e a chuva em rodízio nos materiais no Switch,
+   os ajudantes da guarda feitos na montagem, DEC-220)). Conferir: o Ato 3 e o Ato 5 a 30 sem cair para
+   29 (sem turbo), e as linhas `[jogo] cortina:` explicando os ~67 ms do carregamento; se não explicarem,
+   a medição do desenho no motor (0.3.6).
 7. **0.2.31:** gerada (motor 0.3.3, jogo sem commit com a roda, a pausa e o trecho pronto), mas a cópia
    para o cartão falhou (o DBI travou) e foi substituída pela 0.2.32 sem rodar.
 8. **0.2.32** (motor 0.3.3: `fsync` no fim do log e o `<jogo>.anterior.log`; jogo do commit 4ee627d:
