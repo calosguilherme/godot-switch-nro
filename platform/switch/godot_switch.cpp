@@ -237,9 +237,14 @@ static void _sondar_pck(const char *p_nro) {
 // shaders nos três núcleos. Ela dorme quase o tempo todo e não tira tempo do jogo.
 static volatile bool _pulso_ligado = false;
 static LibnxThread _pulso_thread;
+// o "em uso" do malloc (mallinfo) só no modo detalhado (<nome>.verbose): o mallinfo percorre o heap inteiro com a
+// trava do malloc fechada, e a principal parava no malloc seguinte (medido: ~105 ms a cada 5,1 s, D-15)
+static volatile bool _memoria_completa = false;
 
 static void _pulso(void *) {
 	const u64 inicio = armGetSystemTick();
+	double memoria_ms = 0.0;
+	double gravacao_ms = 0.0;
 	while (_pulso_ligado) {
 		for (int i = 0; i < 50 && _pulso_ligado; i++) {
 			svcSleepThread(100000000ULL);
@@ -251,26 +256,41 @@ static void _pulso(void *) {
 		// FPS do motor; memória do processo usada/total (do sistema, em MiB); e, com o motor rodando, o
 		// tempo de processamento por quadro (código do jogo), chamadas de desenho, objetos e memória de vídeo
 		const double fps = Engine::get_singleton() ? Engine::get_singleton()->get_frames_per_second() : 0.0;
-		// a memória do malloc em uso e o pico que o heap já alcançou (até a 0.2.22 o pulso mostrava a do
-		// processo, sempre 3185/3189 MiB: o carregador reserva o heap inteiro de uma vez). Um vazamento
-		// aparece como o "em uso" subindo sem voltar.
-		const struct mallinfo mi = mallinfo();
-		const u64 usada = (u64)mi.uordblks;
-		const u64 total = (u64)mi.arena;
+		// o pico que o heap já alcançou (até a 0.2.22 o pulso mostrava a memória do processo, sempre 3185/3189
+		// MiB: o carregador reserva o heap inteiro de uma vez) e, no modo detalhado, o malloc em uso (um
+		// vazamento aparece como o "em uso" subindo sem voltar); o pico é o sbrk(0) menos o começo do heap, sem trava
+		const u64 antes_memoria = armGetSystemTick();
+		u64 total = (u64)((char *)sbrk(0) - fake_heap_start);
+		long long usada = -1;
+		if (_memoria_completa) {
+			const struct mallinfo mi = mallinfo();
+			usada = (long long)mi.uordblks;
+			total = (u64)mi.arena;
+		}
+		memoria_ms = armTicksToNs(armGetSystemTick() - antes_memoria) / 1000000.0;
+		char memoria[64];
+		if (usada >= 0) {
+			snprintf(memoria, sizeof(memoria), "malloc %lld MiB (pico %llu MiB)", usada >> 20, (unsigned long long)(total >> 20));
+		} else {
+			snprintf(memoria, sizeof(memoria), "heap %llu MiB", (unsigned long long)(total >> 20));
+		}
 		// os números da renderização vêm do laço principal (OS_Switch::run): consultar a renderização
 		// desta thread derruba o processo
 		const OS_Switch::Medidas m = OS_Switch::medidas;
 		if (m.prontas) {
-			printf("[switch] pulso: %llu s%s, %.0f FPS, malloc %llu MiB (pico %llu MiB), quadro %.1f ms (GPU %.1f ms; desenho na CPU %.1f ms; espera da GPU %.1f ms; envio %.1f ms; pior quadro do segundo %.1f ms; física %.1f ms), %.0f desenhos, %.0f objetos, vídeo %.0f MiB\n",
-					(unsigned long long)(ms / 1000), OS_Switch::acelerado ? " (acelerado)" : "", fps, (unsigned long long)(usada >> 20), (unsigned long long)(total >> 20),
-					m.quadro_ms, m.gpu_ms, m.desenho_ms, m.troca_ms, m.envio_ms, m.processo_ms, m.fisica_ms, m.desenhos, m.objetos, m.video_mib);
+			printf("[switch] pulso: %llu s%s, %.0f FPS, %s, quadro %.1f ms (GPU %.1f ms; desenho na CPU %.1f ms; espera da GPU %.1f ms; envio %.1f ms; apresentação %.1f ms; pior quadro do segundo %.1f ms; física %.1f ms), %.0f desenhos, %.0f objetos, vídeo %.0f MiB; o pulso: memória %.1f ms, gravação %.1f ms\n",
+					(unsigned long long)(ms / 1000), OS_Switch::acelerado ? " (acelerado)" : "", fps, memoria,
+					m.quadro_ms, m.gpu_ms, m.desenho_ms, m.troca_ms, m.envio_ms, m.apresentacao_ms, m.processo_ms, m.fisica_ms, m.desenhos, m.objetos, m.video_mib, memoria_ms, gravacao_ms);
 		} else {
-			printf("[switch] pulso: %llu s, malloc %llu MiB (pico %llu MiB)\n", (unsigned long long)(ms / 1000), (unsigned long long)(usada >> 20), (unsigned long long)(total >> 20));
+			printf("[switch] pulso: %llu s, %s\n", (unsigned long long)(ms / 1000), memoria);
 		}
-		// grava no cartão: se o console travar e for desligado à força, o log não se perde
+		// grava no cartão: se o console travar e for desligado à força, o log não se perde (o tempo sai no
+		// pulso seguinte)
+		const u64 antes_gravacao = armGetSystemTick();
 		rmutexLock(&_trava_log);
 		fsync(STDOUT_FILENO);
 		rmutexUnlock(&_trava_log);
+		gravacao_ms = armTicksToNs(armGetSystemTick() - antes_gravacao) / 1000000.0;
 	}
 }
 
@@ -583,6 +603,7 @@ int main(int argc, char *argv[]) {
 	if (detalhado) {
 		fclose(detalhado);
 		args.push_back((char *)"--verbose");
+		_memoria_completa = true;
 		printf("[switch] modo detalhado (%s)\n", marca);
 	}
 	// Opções do driver de vídeo (docs/decisoes.md): cada linha NOME=valor do mesa_env.txt na pasta do .nro vira uma

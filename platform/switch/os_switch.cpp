@@ -10,6 +10,7 @@
 #include "display_server_switch.h"
 #include "api/switch_singleton.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
@@ -299,6 +300,24 @@ void OS_Switch::_sentinela(void *) {
 	}
 }
 
+// O ritmo dos quadros pela tela (docs/decisoes.md, D-19): com o Engine.max_fps em 30 (20, 15), a janela mostra um
+// quadro a cada 2 (3, 4) atualizações da tela de 60 Hz. Só com o limitador do Godot, que dorme pelo relógio, os
+// quadros saíam a ~33,0 ms contra os 33,3 da tela, a diferença se acumulava e de tempos em tempos um quadro
+// esperava uma atualização a mais (o contador ia a 29 com folga de sobra). O NVK e o EGL voltam o intervalo a 1
+// quando recriam a troca de quadros: a cada quadro o laço confere e reaplica.
+void OS_Switch::_manter_o_ritmo() {
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	const u32 intervalo = (max_fps > 0 && max_fps <= 30) ? CLAMP((u32)((60 + max_fps / 2) / max_fps), 2u, 4u) : 1u;
+	NWindow *janela = nwindowGetDefault();
+	if (janela->swap_interval != intervalo) {
+		nwindowSetSwapInterval(janela, intervalo);
+	}
+	if (intervalo != intervalo_avisado) {
+		intervalo_avisado = intervalo;
+		printf("[switch] ritmo: um quadro a cada %u atualização(ões) da tela (Engine.max_fps %d)\n", intervalo, max_fps);
+	}
+}
+
 void OS_Switch::run() {
 	if (!main_loop) {
 		return;
@@ -348,6 +367,7 @@ void OS_Switch::run() {
 		if (sair) {
 			break;
 		}
+		_manter_o_ritmo();
 		// o cache de shaders depois da abertura (com o menu já desenhado): comparado com o da abertura, diz
 		// se o Godot e o driver gravaram (docs/decisoes.md)
 		if (quadros == 600) {
@@ -396,9 +416,11 @@ void OS_Switch::run() {
 			m.quadro_ms = iteracao_us / 60.0 / 1000.0;
 			m.troca_ms = DisplayServerSwitch::troca_us / 60.0 / 1000.0;
 			m.envio_ms = DisplayServerSwitch::envio_us / 60.0 / 1000.0;
+			m.apresentacao_ms = DisplayServerSwitch::apresentacao_us / 60.0 / 1000.0;
 			iteracao_us = 0;
 			DisplayServerSwitch::troca_us = 0;
 			DisplayServerSwitch::envio_us = 0;
+			DisplayServerSwitch::apresentacao_us = 0;
 			m.prontas = true;
 			medidas = m;
 		}
