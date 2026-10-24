@@ -192,6 +192,13 @@ no README ("Para o jogo"). Nomes em português, como o resto do port.
   o stdout e o stderr (dois `FILE` com travas próprias, o mesmo arquivo) e o pulso escreviam ao mesmo
   tempo no mesmo deslocamento. Desde a 0.2.25 o `_write_r` da newlib é embrulhado
   (`-Wl,--wrap=_write_r`): uma trava única para o stdout, o stderr e o `fsync` do pulso.
+- **[medido] O pulso parava o jogo (0.3.7):** no Batida 0.2.37 a linha `[jogo] pico:` mostrou quadros de
+  125–140 ms a cada 5,1 s certos (o período do pulso: 5 s de sono + o trabalho), com os ~105 ms a mais em
+  qualquer fase do quadro (processo, antes do desenho, desenho, espera): a principal inteira parada. A
+  suspeita é o `mallinfo()`, que percorre o heap todo (~750 MB, Godot fragmenta muito) com a trava do
+  `malloc` fechada; a principal para no `malloc` seguinte. Desde o 0.3.7 o pulso mostra `heap N MiB` (o
+  `sbrk(0)` menos o `fake_heap_start`, sem trava) e só chama o `mallinfo` no modo detalhado
+  (`<jogo>.verbose`); e mede a si mesmo (`o pulso: memória X ms, gravação Y ms`) para confirmar.
 - O pulso (a cada 5 s) mostra FPS, `malloc` em uso e o pico (a memória do processo era inútil: sempre
   3185/3189 MiB, porque o carregador reserva o heap inteiro), o quadro, a espera da placa (só no
   OpenGL), desenhos, objetos e memória de vídeo.
@@ -211,6 +218,11 @@ no README ("Para o jogo"). Nomes em português, como o resto do port.
   da GPU" do pulso, e o tempo do envio sai como "envio". Hipótese a provar (Batida 0.2.32: quadro ≈ scripts
   + GPU): a placa e a CPU em série no Vulkan do port. Se o envio levar ~a GPU, o NVK espera a placa no
   `vkQueueSubmit`; se a espera pelas cercas levar, o Godot espera o quadro anterior inteiro.
+- **[código] A apresentação no pulso (0.3.9):** o `vkAcquireNextImageKHR` e o `vkQueuePresentKHR` chegam ao
+  Godot pelo `vkGetDeviceProcAddr`, que ele pega pelo `vkGetInstanceProcAddr` (já embrulhado, D-20): o port
+  devolve versões que medem o tempo ("apresentação" no pulso) e escrevem `[switch] apresentação longa: ...`
+  quando uma passa de 100 ms. Motivo: no Batida 0.2.43, um quadro de 305 ms só de espera, sem trabalho do
+  jogo nem nada carregando.
 - **Marcas de passagem do Vulkan:** `vulkan_etapas.txt` ao lado do executável, uma linha por etapa
   vencida antes do `main` (userAppInit, construtores, main, sockets, log). Antes do `main` o caminho vem
   da linha de comando crua do carregador (`envGetArgv`).
@@ -308,3 +320,42 @@ no README ("Para o jogo"). Nomes em português, como o resto do port.
   mais incerto é se a conexão do sistema fica de pé para um homebrew sem um pedido ao nifm
   (`nifmCreateRequest`), como fazem os jogos oficiais; se o log disser "sem conexão" com o Wi-Fi ligado,
   é o próximo passo (e o pedido teria de ser fechado na saída).
+- **[medido]** No console (Batida 0.2.30, port 0.3.2): a linha `[switch] rede:` com o endereço do Wi-Fi e
+  uma partida online Switch ↔ PC na mesma rede, sem o pedido ao nifm.
+
+## D-19 — O ritmo dos quadros pela tela (port 0.3.6)
+
+- **Contexto:** o Batida trava em 30 FPS no Switch com `Engine.max_fps = 30` (o limitador do Godot, que
+  dorme pelo relógio). **[medido]** No console (0.2.34–0.2.36, com turbo e folga de 11–13 ms no pior
+  quadro) o contador ainda ia a 29 de vez em quando; o quadro médio dava 32,9–33,1 ms, e não 33,3: o
+  limitador anda um pouco à frente da tela de 60 Hz, a diferença se acumula e de tempos em tempos um quadro
+  espera uma atualização a mais.
+- **A escolha:** com o `Engine.max_fps` em 30 (20, 15), o laço do port põe a janela do homebrew num
+  intervalo de troca de 2 (3, 4) (`nwindowSetSwapInterval`): cada quadro fica 2 atualizações na tela e o
+  ritmo vem da tela, não do relógio. Sem limite (0) ou acima de 30, intervalo 1. O NVK (e o EGL) voltam o
+  intervalo a 1 quando recriam a troca de quadros (FIFO = 1 no `wsi_common_switch.c` do mesa-switch); o laço
+  confere o `NWindow::swap_interval` a cada quadro e reaplica. O limitador do Godot continua ligado; à
+  frente da tela, ele só espera um pouco mais pela imagem livre. O log diz `[switch] ritmo: ...` quando muda.
+- **[estimativa]** A provar no console: o contador fixo em 30 com folga, e nenhum efeito onde o jogo não
+  chega a 30 (um quadro atrasado aparece na atualização seguinte, como antes).
+
+## D-20 — 1920×1080 na base, no Vulkan (port 0.3.8)
+
+- **Contexto:** a janela do homebrew era sempre 1280×720; na base o Switch manda 1920×1080 à TV e o sistema
+  ampliava a imagem 1,5×, com o serrilhado junto. **[medido]** No Batida 0.2.38 o criador achou o
+  serrilhado evidente na TV, e na base a GPU dava ~6,3 ms por quadro (no portátil 13–17 ms): sobra para
+  2,25× mais pixels.
+- **A escolha (só no `<jogo>.vulkan`):** o tamanho segue o modo de operação (`appletGetOperationMode`, que
+  a libnx guarda): na base 1920×1080, no portátil 1280×720. O `DisplayServerSwitch` abre já no tamanho do
+  modo e confere a cada quadro (`_ajustar_tamanho`); ao entrar ou sair da base, chama o
+  `window_set_size` do contexto (o RenderingDevice recria a troca de quadros) e o `rect_changed_callback`
+  (a janela do Godot muda de tamanho e o jogo recebe o `size_changed`). O toque já escalava pelo tamanho.
+- **O círculo do tamanho:** o Godot cria a troca com o `currentExtent` da superfície, o NVK o tira das
+  dimensões da janela da libnx, e a libnx só deixa mudá-las sem imagens registradas, o que o NVK faz ao
+  criar a troca (com o tamanho pedido, depois de soltar as imagens da anterior). O port embrulha o
+  `vkGetInstanceProcAddr` (`-Wl,--wrap`) e devolve ao Godot uma `vkGetPhysicalDeviceSurfaceCapabilitiesKHR`
+  que informa o tamanho do modo como `currentExtent`.
+- **O OpenGL fica em 1280×720:** trocar a superfície do EGL com o jogo aberto é outro caminho, sem teste.
+- **[estimativa]** A provar no console: a troca ao encaixar e ao tirar com o jogo aberto (sem tela preta
+  nem a superfície perdida), a GPU na base em 1080p dentro dos 33 ms, o HUD e a escala do 3D do jogo
+  no tamanho novo. O log diz `[switch] tela: 1920x1080 (na base)`.

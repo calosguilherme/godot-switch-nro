@@ -139,6 +139,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED", "VK_USE_PLATFORM_VI_NN"])
         # a espera pelas cercas e o envio medidos no pulso (rendering_context_driver_vulkan_switch.cpp, D-15)
         env.Append(LINKFLAGS=["-Wl,--wrap=vkWaitForFences", "-Wl,--wrap=vkQueueSubmit"])
+        # o tamanho da troca de quadros pelo modo (na base, 1920×1080; rendering_context_driver_vulkan_switch.cpp, D-20)
+        env.Append(LINKFLAGS=["-Wl,--wrap=vkGetInstanceProcAddr"])
         if env["nvk"]:
             env.Append(LIBPATH=[env["nvk"]])
         # do build-switch.sh do mesa-switch: o libvulkan.a já junta o NVK, o NIR, o NAK (com o Rust) e o runtime

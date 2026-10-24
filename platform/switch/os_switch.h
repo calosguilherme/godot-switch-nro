@@ -17,6 +17,9 @@ class OS_Switch : public OS_Unix {
 	MainLoop *main_loop = nullptr;
 	AudioDriverSwitch audio_driver_switch;
 	JoypadSwitch *joypad = nullptr;
+	// o intervalo de troca pedido pelo Engine.max_fps (D-19) e o último anunciado no log
+	uint32_t intervalo_avisado = 0;
+	void _manter_o_ritmo();
 
 protected:
 	void initialize() override;
@@ -83,6 +86,7 @@ public:
 		double quadro_ms = 0.0; // a iteração inteira do motor, em média
 		double troca_ms = 0.0; // dentro dela, esperando a placa de vídeo (OpenGL: eglSwapBuffers; Vulkan: as cercas)
 		double envio_ms = 0.0; // Vulkan: dentro do vkQueueSubmit
+		double apresentacao_ms = 0.0; // Vulkan: dentro do vkAcquireNextImageKHR e do vkQueuePresentKHR
 		double gpu_ms = 0.0; // a placa de vídeo desenhando a tela (timestamps do Godot; 0 se o driver não mede)
 		double desenho_ms = 0.0; // o motor montando o desenho da tela na CPU (cena, culling, listas)
 	};

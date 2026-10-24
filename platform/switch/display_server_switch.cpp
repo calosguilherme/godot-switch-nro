@@ -246,12 +246,50 @@ void DisplayServerSwitch::_processar_toque() {
 }
 
 void DisplayServerSwitch::process_events() {
+	_ajustar_tamanho();
 	_processar_toque();
 	Input::get_singleton()->flush_buffered_events();
 }
 
+Size2i DisplayServerSwitch::tamanho_da_superficie = Size2i(1280, 720);
+
+Size2i DisplayServerSwitch::tamanho_do_modo() {
+#if defined(RD_ENABLED)
+	// a libnx guarda o modo de operação (atualizado pelas mensagens do applet no appletMainLoop): ler não custa
+	if (appletGetOperationMode() == AppletOperationMode_Console) {
+		return Size2i(1920, 1080);
+	}
+#endif
+	return Size2i(1280, 720);
+}
+
+// Na base o Switch manda 1920×1080 à TV; com a janela em 1280×720 o sistema ampliava 1,5× e o serrilhado
+// crescia junto (medido no console, D-20). No Vulkan, a superfície passa a informar o tamanho do modo como o
+// currentExtent, e o window_set_size faz o RenderingDevice recriar a troca de quadros: o NVK solta as imagens
+// da anterior e ajusta a janela da libnx ao tamanho novo (wsi_common_switch.c). O rect_changed_callback leva
+// o tamanho à janela do Godot (o size_changed do jogo).
+void DisplayServerSwitch::_ajustar_tamanho() {
+#if defined(RD_ENABLED)
+	if (!rendering_context) {
+		return;
+	}
+	const Size2i novo = tamanho_do_modo();
+	if (novo == tamanho) {
+		return;
+	}
+	tamanho = novo;
+	tamanho_da_superficie = novo;
+	rendering_context->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, tamanho.width, tamanho.height);
+	if (rect_changed_callback.is_valid()) {
+		rect_changed_callback.call(Rect2i(Point2i(), tamanho));
+	}
+	printf("[switch] tela: %dx%d (%s)\n", tamanho.width, tamanho.height, tamanho.width > 1280 ? "na base" : "fora da base");
+#endif
+}
+
 uint64_t DisplayServerSwitch::troca_us = 0;
 uint64_t DisplayServerSwitch::envio_us = 0;
+uint64_t DisplayServerSwitch::apresentacao_us = 0;
 
 void DisplayServerSwitch::avisar_janela(DisplayServerEnums::WindowEvent p_evento) {
 	if (window_event_callback.is_valid()) {
@@ -331,6 +369,9 @@ DisplayServerSwitch::DisplayServerSwitch(const String &p_rendering_driver, Displ
 	r_error = ERR_UNAVAILABLE;
 #if defined(RD_ENABLED)
 	if (rendering_driver == "vulkan") {
+		// já abre no tamanho do modo (na base, 1920×1080)
+		tamanho = tamanho_do_modo();
+		tamanho_da_superficie = tamanho;
 		r_error = _iniciar_vulkan(p_vsync_mode);
 		if (r_error != OK) {
 			return;

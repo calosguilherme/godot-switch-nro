@@ -32,6 +32,10 @@ na branch `batida-capixaba` (`jogos/batida-capixaba/historico.md`).
 | O fim do log na saída | 0.2.28, 0.2.30 | **falhou**: o log parava no último pulso (sem "fim do laço"/"saiu"); corrigido no port 0.3.3 (`fsync` no fim do `main`), a provar |
 | O fim do log na saída, com o `fsync` (port 0.3.3) | 0.2.32 | **ainda sem o fim**: o log para no último pulso. A conferir como o jogo foi fechado (HOME → fechar o software para abrir o DBI: o sistema pode encerrar o processo antes do fim do `main`, e o `saida.txt` seria o da sessão anterior) |
 | O log da sessão anterior (`<jogo>.anterior.log`, port 0.3.3) | 0.2.32 | **passou**: `batida.anterior.log` e `batida.vulkan.anterior.log` no cartão |
+| A apresentação no pulso (port 0.3.9) | 0.2.44 | **passou**: o `vkAcquireNextImageKHR` + `vkQueuePresentKHR` em 0,4–0,5 ms por quadro; as `apresentação longa` (151–531 ms) só ao encaixar ou tirar da base |
+| 1920×1080 na base, troca ao vivo (port 0.3.8, D-20) | 0.2.40 | **a troca passou** (encaixar e tirar com o jogo aberto, sem cair: `tela: 1920x1080 (na base)` / `1280x720`). No Batida com o 3D a 100% e o MSAA 4×, 20 FPS na base: GPU 22–23 ms e a espera pelas cercas 18–22 ms por quadro (a placa no limite); o jogo vai baixar a escala do 3D na base |
+| O pulso sem o `mallinfo` (port 0.3.7) | 0.2.38 | **passou**: o pulso leva memória 0,0 ms e gravação ~3,5 ms; sumiram os quadros de ~130 ms a cada 5,1 s |
+| O ritmo pela tela (intervalo de troca 2 com o `max_fps` 30, port 0.3.6, D-19) | 0.2.37–0.2.38 | **passou**: `[switch] ritmo: um quadro a cada 2`; o criador não viu mais o 30 → 29 |
 | Espera pelas cercas e envio do Vulkan (port 0.3.5) | 0.2.34 | **a placa e a CPU não estão em série**: `vkWaitForFences` 0,0–0,2 ms e `vkQueueSubmit` 0,3 ms por quadro. Com 30 FPS fixos, o pior quadro do segundo é 28–35 ms sem turbo e 18–22 ms com turbo (Batida, Ato 3 e Ato 7) |
 | GPU por quadro no Batida (port 0.3.3) | 0.2.32 | menu 16 ms, Ato 3 17–19 ms, Ato 7 27,7 ms; o quadro ≈ os scripts do jogo + a GPU (hipótese: a placa e a CPU em série no Vulkan, a medir com o port 0.3.5) |
 

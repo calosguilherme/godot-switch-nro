@@ -56,8 +56,15 @@ class DisplayServerSwitch : public DisplayServerHeadless {
 	void _encerrar_vulkan();
 #endif
 	void _processar_toque();
+	// Vulkan: na base 1920×1080, no portátil 1280×720 (docs/decisoes.md, D-20); confere a cada quadro e, se o
+	// console entrou ou saiu da base, muda a janela e avisa o Godot
+	void _ajustar_tamanho();
 
 public:
+	// o tamanho que a superfície do Vulkan informa ao Godot (o currentExtent; rendering_context_driver_vulkan_switch.cpp)
+	static Size2i tamanho_da_superficie;
+	// 1920×1080 na base (só no Vulkan), 1280×720 no portátil
+	static Size2i tamanho_do_modo();
 	static void register_switch_driver();
 
 	bool has_feature(DisplayServerEnums::Feature p_feature) const override;
@@ -99,6 +106,8 @@ public:
 	static uint64_t troca_us;
 	// Vulkan: o tempo dentro do vkQueueSubmit, somado em µs
 	static uint64_t envio_us;
+	// Vulkan: o tempo dentro do vkAcquireNextImageKHR e do vkQueuePresentKHR, somado em µs
+	static uint64_t apresentacao_us;
 
 	DisplayServerSwitch(const String &p_rendering_driver, DisplayServerEnums::VSyncMode p_vsync_mode, Error &r_error);
 	~DisplayServerSwitch();
